@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#0D47A1</color>
+    <color name="colorPrimaryDark">#5472D3</color>
+    <color name="colorPrimaryDarker">#002171</color>
+
+    <color name="colorSecundary">#2196F3</color>
+    <color name="colorSecundaryDark">#0069C0</color>
+    <color name="colorSecundaryLight">#6EC6FF</color>
+
+    <color name="textColorPrimary">#ffffff</color>
+    <color name="colorAccent">#34B7F1</color>
+    <color name="cinza">#939393</color>
+    <color name="cinzaEscuro">#555454</color>
+    <color name="cinzaClaro">#cccccc</color>
+    <color name="cinzaClaro2">#e6e6e6</color>
+    <color name="cinzaClaro3">#f5f5f5</color>
+    <color name="preto">#0a0a0a</color>
+    <color name="branco">#ffffff</color>
+    <color name="vermelho">#ff0000</color>
+</resources>

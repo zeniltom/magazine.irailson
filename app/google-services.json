@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1024248301738",
+    "firebase_url": "https://magazine-irailson.firebaseio.com",
+    "project_id": "magazine-irailson",
+    "storage_bucket": "magazine-irailson.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024248301738:android:4c976c63ad184715f368d3",
+        "android_client_info": {
+          "package_name": "com.example.magazine_irailson"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1024248301738-m7he9k7gnuhdeav6elsera2ip0h33cdn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.magazine_irailson",
+            "certificate_hash": "6aff709f18648827be8ad042997045fa995afc6d"
+          }
+        },
+        {
+          "client_id": "1024248301738-vnpq20dpcj95pkbp8bq6hsbper68j2m4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPQJNc7cvaQhsb3zpcEgGrzrquIsNlT4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1024248301738-vnpq20dpcj95pkbp8bq6hsbper68j2m4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

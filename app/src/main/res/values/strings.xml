@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Magazine</string>
+    <string name="cadastrar_usuario">Cadastrar Usuário</string>
+    <string name="preencha_email">Preencha o E-mail</string>
+    <string name="preencha_nome">Preencha o Nome</string>
+    <string name="preencha_os_dados_senha">8 carácteres no mínimo!</string>
+    <string name="action_configuracoes">Configurações</string>
+    <string name="sair">Sair</string>
+    <string name="compartilhar">Compartilhe</string>
+    <string name="compartilhar_app">Compartilhar App</string>
+    <string name="padrao">Padrão</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="salvar_experiencia">Cadastro de Produto</string>
+    <string name="texto_add_produto">Cadastrar produto novo</string>
+    <string name="texto_produto">Aqui você poderá ver, cadastrar e editar todos os seus produtos.</string>
+    <string name="contatos">Contatos</string>
+    <string name="cadastrar_produto">Cadastrar Produto</string>
+    <string name="texto_sem_produtos">Sem produtos cadastrados</string>
+    <string name="navigation_header">Navigation header</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sobre">Sobre</string>
+    <string name="home">Home</string>
+    <string name="e_mail">E-mail</string>
+    <string name="senha">Senha</string>
+    <string name="entrar">Entrar</string>
+    <string name="cadastre_se">Cadastre-se</string>
+    <string name="logo">Logo</string>
+    <string name="texto_magazine">Com mais de 95 anos e trajetória marcada pela constante inovação, ética e pioneirismo, a Magazine é líder no segmento de duchas, chuveiros, torneiras elétricas e aquecedores de água a gás. A empresa se destaca por colocar à disposição dos consumidores o que há de melhor em louças, assentos, metais e plásticos sanitários, purificadores de água e lâmpadas, refletores, painéis e spots LED, fluorescentes compactas e de alta potência. Com cinco fábricas no Brasil, sendo quatro unidades no Estado de São Paulo e uma em Minas Gerais, a Magazine possui distribuição nacional e internacional. O objetivo é oferecer produtos de qualidade e com design inovador, desenvolvidos com a mais alta tecnologia e consciência ambiental.</string>
+    <string name="sobre_a_magazine">Sobre a Magazine</string>
+    <string name="compartilhe">Compartilhe</string>
+</resources>
