@@ -18,6 +18,8 @@ import com.example.magazine_irailson.activity.ProdutoCadastroActivity;
 import com.example.magazine_irailson.config.ConfiguracaoFirebase;
 import com.example.magazine_irailson.model.Produto;
 import com.example.magazine_irailson.util.Util;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.StorageReference;
 
@@ -35,6 +37,7 @@ public class ProdutoRecyclerAdapter extends RecyclerView.Adapter<ProdutoViewHold
     private AlertDialog alert;
 
     private StorageReference storage = ConfiguracaoFirebase.getFirebaseStorage();
+    private StorageReference referenciaProduto = ConfiguracaoFirebase.getFirebaseStorage();
     private DatabaseReference firebase;
 
     public ProdutoRecyclerAdapter(ArrayList<Produto> produtos, Context context) {
@@ -71,7 +74,7 @@ public class ProdutoRecyclerAdapter extends RecyclerView.Adapter<ProdutoViewHold
         final Produto produto = produtos.get(position);
 
         firebase = ConfiguracaoFirebase.getFirebase().child("produtos").child(produto.getId());
-        StorageReference referenciaProduto = storage.child("fotos").child("produtos")
+        referenciaProduto = storage.child("fotos").child("produtos")
                 .child(produto.getId()).child("foto");
 
         holder.tvSku.setText(produto.getSku());
@@ -119,6 +122,17 @@ public class ProdutoRecyclerAdapter extends RecyclerView.Adapter<ProdutoViewHold
 
     private void deletarProduto(DatabaseReference firebase, Produto produto) {
         firebase.removeValue((databaseError, databaseReference) -> Util.mostrarMensagen(context, "Deletando " + produto.getNome()));
+        referenciaProduto.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Util.mostrarMensagen(context, "Erro ao apagar foto!");
+            }
+        });
     }
 
     @Override

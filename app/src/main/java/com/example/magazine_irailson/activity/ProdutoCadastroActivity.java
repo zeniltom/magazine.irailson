@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
@@ -24,6 +25,7 @@ import com.example.magazine_irailson.R;
 import com.example.magazine_irailson.config.ConfiguracaoFirebase;
 import com.example.magazine_irailson.model.Produto;
 import com.example.magazine_irailson.util.Util;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,9 +46,12 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
     private Produto produto;
 
     private RadioGroup rgUnidadeMedida;
+    private ProgressBar progressBar;
+
     private StorageReference storage = ConfiguracaoFirebase.getFirebaseStorage();
     private String foto;
     private ImageView fotoPostagem;
+    private String urlConvertida;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +72,8 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
         etValorUnitario = findViewById(R.id.etValorUnitario);
         rgUnidadeMedida = findViewById(R.id.rgUnidadeMedida);
         fotoPostagem = findViewById(R.id.fotoPostagem);
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
 
         Button btAlterarExperiencia = findViewById(R.id.btSalvarProduto);
         btAlterarExperiencia.setOnClickListener(v -> validarCampos());
@@ -82,6 +89,8 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
         etValorUnitario.setText(String.valueOf(produtoEditado.getValorUnitario()));
 
         carregarImagem(produtoEditado);
+
+        foto = produtoEditado.getFoto();
 
         if (produtoEditado.isKg())
             rgUnidadeMedida.check(R.id.rbKG);
@@ -145,6 +154,10 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
             Util.mostrarInfoDialog(this, "Escolha a unidade de medida!");
             rgUnidadeMedida.requestFocus();
             return;
+        } else if (foto == null) {
+            Util.mostrarInfoDialog(this, "Escolha a foto do produto!");
+            fotoPostagem.requestFocus();
+            return;
         }
 
         String nome = etNomeProduto.getText().toString();
@@ -172,10 +185,11 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
 
     private void salvarProduto(String nome, String sku, String quantidade, String valorUnitario,
                                boolean isKG, boolean isUNI) {
+        progressBar.setVisibility(View.VISIBLE);
+
         try {
             DatabaseReference autoId = referenciaProduto.push();
-
-            salvarImagem();
+            produto = new Produto();
 
             produto.setNome(nome);
             produto.setSku(sku);
@@ -186,8 +200,19 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
 
             produto.setId(autoId.getKey());
 
-            salvarFirebase(produto);
-            finish();
+            //Salva a imagem do produto no Firebase Storage
+            StorageReference referenciaProduto = storage.child("fotos").child("produtos").child(produto.getId()).child("foto");
+
+            //Faz upload da foto
+            UploadTask uploadTask = referenciaProduto.putFile(Uri.parse(foto));
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                Uri firebaseUrl = taskSnapshot.getDownloadUrl();
+                urlConvertida = Objects.requireNonNull(firebaseUrl).toString();
+                produto.setFoto(urlConvertida);
+                salvarFirebase(produto);
+
+            }).addOnFailureListener(e -> {
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -195,6 +220,8 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
     }
 
     private void editarProduto() {
+        progressBar.setVisibility(View.VISIBLE);
+
         if (foto != null)
             salvarImagem();
 
@@ -214,6 +241,8 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
                 referenciaProduto.child(produto.getId()).updateChildren(dados);
 
                 Util.mostrarMensagen(ProdutoCadastroActivity.this, "Produto atualizado com sucesso!");
+                progressBar.setVisibility(View.GONE);
+
                 finish();
             }
 
@@ -229,6 +258,8 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
             referenciaProduto.child(produto.getId()).setValue(produto);
 
             Util.mostrarMensagen(this, "Sucesso ao cadastrar produto");
+            progressBar.setVisibility(View.GONE);
+
             finish();
 
         } catch (Exception e) {
@@ -238,20 +269,20 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
     }
 
     private void salvarImagem() {
-        //Salvador imagens no Firebase Storage
-        StorageReference referenciaProduto = storage.child("fotos").child("produtos").child(produto.getId()).child("foto");
+        if (produto != null && produto.getId() != null) {
+            //Atualiza a imagem do produto no Firebase Storage
+            StorageReference referenciaProduto = storage.child("fotos").child("produtos").child(produto.getId()).child("foto");
 
-        //Faz upload da foto
-        UploadTask uploadTask = referenciaProduto.putFile(Uri.parse(foto));
-        uploadTask.addOnSuccessListener(taskSnapshot -> {
-            Uri firebaseUrl = taskSnapshot.getDownloadUrl();
-            String urlConvertida = firebaseUrl.toString();
-            produto.setFoto(urlConvertida);
-            Util.mostrarMensagen(ProdutoCadastroActivity.this, urlConvertida);
+            //Faz upload da foto
+            UploadTask uploadTask = referenciaProduto.putFile(Uri.parse(foto));
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                Uri firebaseUrl = taskSnapshot.getDownloadUrl();
+                urlConvertida = Objects.requireNonNull(firebaseUrl).toString();
+                produto.setFoto(urlConvertida);
 
-        }).addOnFailureListener(e -> {
-            Util.mostrarMensagen(this, "Falha ao fazer upload");
-        });
+            }).addOnFailureListener(e -> {
+            });
+        }
     }
 
     // Método para selecionar foto
@@ -266,7 +297,7 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
         if (resultCode == Activity.RESULT_OK) {
             //Recuperar imagem
             Uri imagemSelecionada = Objects.requireNonNull(data).getData();
-            foto = imagemSelecionada.toString();
+            foto = Objects.requireNonNull(imagemSelecionada).toString();
 
             //Inserir imagem no ImageView
             fotoPostagem.setImageURI(imagemSelecionada);
