@@ -3,9 +3,12 @@ package com.example.magazine_irailson.adapter;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +19,7 @@ import com.example.magazine_irailson.config.ConfiguracaoFirebase;
 import com.example.magazine_irailson.model.Produto;
 import com.example.magazine_irailson.util.Util;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -29,6 +33,9 @@ public class ProdutoRecyclerAdapter extends RecyclerView.Adapter<ProdutoViewHold
 
     private AlertDialog.Builder builder;
     private AlertDialog alert;
+
+    private StorageReference storage = ConfiguracaoFirebase.getFirebaseStorage();
+    private DatabaseReference firebase;
 
     public ProdutoRecyclerAdapter(ArrayList<Produto> produtos, Context context) {
         this.produtos = produtos;
@@ -62,13 +69,17 @@ public class ProdutoRecyclerAdapter extends RecyclerView.Adapter<ProdutoViewHold
 
         //Setar Propriedades vindas da classe
         final Produto produto = produtos.get(position);
+
+        firebase = ConfiguracaoFirebase.getFirebase().child("produtos").child(produto.getId());
+        StorageReference referenciaProduto = storage.child("fotos").child("produtos")
+                .child(produto.getId()).child("foto");
+
         holder.tvSku.setText(produto.getSku());
         holder.tvNome.setText(produto.getNome());
         holder.tvQtdEstoque.setText(String.valueOf(produto.getQuantidadeEstoque()));
         holder.tvUnidadeMedida.setText(produto.isKg() ? "KG" : "UNI");
         holder.tvValorUnitario.setText(moeda.format(produto.getValorUnitario()));
-
-        final DatabaseReference firebase = ConfiguracaoFirebase.getFirebase().child("produtos").child(produto.getId());
+        carregarImagem(holder.fotoProduto, referenciaProduto);
 
         holder.setItemClickListener((view, position1, isLongClick) -> {
             Intent intent = new Intent(context, ProdutoCadastroActivity.class);
@@ -92,6 +103,18 @@ public class ProdutoRecyclerAdapter extends RecyclerView.Adapter<ProdutoViewHold
         });
 
         holder.btDetalhesProduo.setOnClickListener(v -> Util.mostrarMensagen(context, "Ver detalhes " + produtos.get(position).getNome()));
+    }
+
+    private void carregarImagem(@NonNull ImageView holder, StorageReference referenciaProduto) {
+        long ONE_MEGABYTE = 1024 * 1024;
+        referenciaProduto.getBytes(ONE_MEGABYTE).addOnSuccessListener(bytes -> {
+            if (bytes != null) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                holder.setImageBitmap(bitmap);
+            } else
+                holder.setImageResource(R.drawable.padrao);
+
+        });
     }
 
     private void deletarProduto(DatabaseReference firebase, Produto produto) {

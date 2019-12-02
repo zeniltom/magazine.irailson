@@ -2,6 +2,7 @@ package com.example.magazine_irailson.adapter;
 
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,6 +18,7 @@ public class ProdutoViewHolder extends RecyclerView.ViewHolder implements View.O
     final TextView tvUnidadeMedida;
     final Button btExcluirProduto;
     final Button btDetalhesProduo;
+    ImageView fotoProduto;
 
     private ProdutoRecyclerAdapter.itemClickListenter itemClickListener;
 
@@ -30,6 +32,7 @@ public class ProdutoViewHolder extends RecyclerView.ViewHolder implements View.O
         tvUnidadeMedida = itemView.findViewById(R.id.tvUnidadeMedida);
         btExcluirProduto = itemView.findViewById(R.id.btExcluirProduto);
         btDetalhesProduo = itemView.findViewById(R.id.btDetalhesProduo);
+        fotoProduto = itemView.findViewById(R.id.fotoProduto);
 
         itemView.setOnClickListener(this);
         itemView.setOnLongClickListener(this);
