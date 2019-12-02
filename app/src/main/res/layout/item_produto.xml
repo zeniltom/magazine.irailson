@@ -22,7 +22,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/fotoProduto"
             app:layout_constraintTop_toBottomOf="@+id/tvSku"
             tools:text="Nome" />
 
@@ -37,7 +37,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@+id/fotoProduto"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="SKU" />
 
@@ -91,14 +91,14 @@
             tools:text="Valor" />
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/fotoProduto"
             android:layout_width="130dp"
             android:layout_height="130dp"
+            android:background="@color/cinzaClaro3"
             android:scaleType="fitXY"
             app:layout_constraintBottom_toTopOf="@+id/btExcluirProduto"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/produto_padrao" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/btExcluirProduto"

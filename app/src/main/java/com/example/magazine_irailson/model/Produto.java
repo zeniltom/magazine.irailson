@@ -12,6 +12,7 @@ public class Produto implements Serializable {
     private String id;
     private String nome;
     private String sku;
+    private String foto;
     private Double valorUnitario;
     private Double quantidadeEstoque;
     private boolean Kg;
@@ -51,6 +52,13 @@ public class Produto implements Serializable {
         this.sku = sku == null ? null : sku.toUpperCase();
     }
 
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
 
     public Double getValorUnitario() {
         return valorUnitario;

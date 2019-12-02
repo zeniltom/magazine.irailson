@@ -1,11 +1,22 @@
 package com.example.magazine_irailson.activity;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -17,8 +28,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import studio.carbonylgroup.textfieldboxes.ExtendedEditText;
 
@@ -27,9 +41,12 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
     private ExtendedEditText etNomeProduto, etSku, etQuantidade, etValorUnitario;
     private final DatabaseReference referenciaProduto = ConfiguracaoFirebase.getFirebase().child("produtos");
 
-    private Produto produtoEditado;
+    private Produto produto;
 
     private RadioGroup rgUnidadeMedida;
+    private StorageReference storage = ConfiguracaoFirebase.getFirebaseStorage();
+    private String foto;
+    private ImageView fotoPostagem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,19 +59,20 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
 
         onBack(toolbar);
 
-        produtoEditado = (Produto) getIntent().getSerializableExtra("produto");
+        produto = (Produto) getIntent().getSerializableExtra("produto");
 
         etNomeProduto = findViewById(R.id.etNomeProduto);
         etSku = findViewById(R.id.etSku);
         etQuantidade = findViewById(R.id.etQuantidade);
         etValorUnitario = findViewById(R.id.etValorUnitario);
         rgUnidadeMedida = findViewById(R.id.rgUnidadeMedida);
+        fotoPostagem = findViewById(R.id.fotoPostagem);
 
         Button btAlterarExperiencia = findViewById(R.id.btSalvarProduto);
         btAlterarExperiencia.setOnClickListener(v -> validarCampos());
 
-        if (produtoEditado != null)
-            carregarProduto(produtoEditado);
+        if (produto != null)
+            carregarProduto(produto);
     }
 
     private void carregarProduto(Produto produtoEditado) {
@@ -63,10 +81,29 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
         etQuantidade.setText(String.valueOf(produtoEditado.getQuantidadeEstoque()));
         etValorUnitario.setText(String.valueOf(produtoEditado.getValorUnitario()));
 
+        carregarImagem(produtoEditado);
+
         if (produtoEditado.isKg())
             rgUnidadeMedida.check(R.id.rbKG);
         else
             rgUnidadeMedida.check(R.id.rbUNI);
+    }
+
+    private void carregarImagem(Produto produtoEditado) {
+        if (produtoEditado.getFoto() != null) {
+
+            StorageReference referenciaProdutoStorage = storage.child("fotos").child("produtos")
+                    .child(produto.getId()).child("foto");
+
+            long ONE_MEGABYTE = 1024 * 1024;
+            referenciaProdutoStorage.getBytes(ONE_MEGABYTE).addOnSuccessListener(bytes -> {
+                if (bytes != null) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    fotoPostagem.setImageBitmap(bitmap);
+                } else
+                    fotoPostagem.setImageResource(R.drawable.padrao);
+            });
+        }
     }
 
     private void onBack(Toolbar toolbar) {
@@ -117,30 +154,28 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
         boolean isKG = rgUnidadeMedida.getCheckedRadioButtonId() == R.id.rbKG;
         boolean isUNI = rgUnidadeMedida.getCheckedRadioButtonId() == R.id.rbUNI;
 
-
         if (!resultado) {
-            if (produtoEditado == null)
+            if (produto == null)
                 salvarProduto(nome, sku, quantidade, valorUnitario, isKG, isUNI);
             else {
-                produtoEditado.setNome(nome);
-                produtoEditado.setSku(sku);
-                produtoEditado.setQuantidadeEstoque(Double.valueOf(quantidade));
-                produtoEditado.setValorUnitario(Double.valueOf(valorUnitario));
-                produtoEditado.setKg(isKG);
-                produtoEditado.setUnidade(isUNI);
+                produto.setNome(nome);
+                produto.setSku(sku);
+                produto.setQuantidadeEstoque(Double.valueOf(quantidade));
+                produto.setValorUnitario(Double.valueOf(valorUnitario));
+                produto.setKg(isKG);
+                produto.setUnidade(isUNI);
 
-                editarProduto(produtoEditado);
+                editarProduto();
             }
         }
     }
 
     private void salvarProduto(String nome, String sku, String quantidade, String valorUnitario,
                                boolean isKG, boolean isUNI) {
-
         try {
             DatabaseReference autoId = referenciaProduto.push();
 
-            Produto produto = new Produto();
+            salvarImagem();
 
             produto.setNome(nome);
             produto.setSku(sku);
@@ -159,7 +194,9 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
         }
     }
 
-    private void editarProduto(final Produto produto) {
+    private void editarProduto() {
+        if (foto != null)
+            salvarImagem();
 
         referenciaProduto.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -172,6 +209,7 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
                 dados.put("valorUnitario", produto.getValorUnitario());
                 dados.put("kg", produto.isKg());
                 dados.put("unidade", produto.isUnidade());
+                dados.put("foto", produto.getFoto());
 
                 referenciaProduto.child(produto.getId()).updateChildren(dados);
 
@@ -197,5 +235,64 @@ public class ProdutoCadastroActivity extends AppCompatActivity implements Adapte
             Util.mostrarMensagen(this, "Erro ao cadastrar produto");
             e.printStackTrace();
         }
+    }
+
+    private void salvarImagem() {
+        //Salvador imagens no Firebase Storage
+        StorageReference referenciaProduto = storage.child("fotos").child("produtos").child(produto.getId()).child("foto");
+
+        //Faz upload da foto
+        UploadTask uploadTask = referenciaProduto.putFile(Uri.parse(foto));
+        uploadTask.addOnSuccessListener(taskSnapshot -> {
+            Uri firebaseUrl = taskSnapshot.getDownloadUrl();
+            String urlConvertida = firebaseUrl.toString();
+            produto.setFoto(urlConvertida);
+            Util.mostrarMensagen(ProdutoCadastroActivity.this, urlConvertida);
+
+        }).addOnFailureListener(e -> {
+            Util.mostrarMensagen(this, "Falha ao fazer upload");
+        });
+    }
+
+    // Método para selecionar foto
+    public void selecionarFoto(View view) {
+        Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(i, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            //Recuperar imagem
+            Uri imagemSelecionada = Objects.requireNonNull(data).getData();
+            foto = imagemSelecionada.toString();
+
+            //Inserir imagem no ImageView
+            fotoPostagem.setImageURI(imagemSelecionada);
+            salvarImagem();
+        }
+    }
+
+    //Méotodo que verifica se o usuário já liberou permissões para o App
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for (int permissaoResultado : grantResults) {
+            if (permissaoResultado == PackageManager.PERMISSION_DENIED) {
+                alertaValidacaoPermissao();
+            }
+        }
+    }// Método que solicita ao usuário a liberação de permissões para App
+
+    private void alertaValidacaoPermissao() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permissões Negadas");
+        builder.setMessage("Para utilizar o app é necessário aceitar as permissões");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Confirmar", (dialogInterface, i) -> finish());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
